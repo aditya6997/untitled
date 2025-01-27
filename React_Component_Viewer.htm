@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>React Component Viewer</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+
+    <!-- Define all functions before DOM loads -->
+    <script>
+        // Component templates
+        const templates = {
+            button: `const Button = () => {
+    return (
+        <button className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
+            Click me!
+        </button>
+    );
+}
+
+const root = ReactDOM.createRoot(document.getElementById('componentPreview'));
+root.render(<Button />);`,
+            card: `const Card = () => {
+    return (
+        <div className="max-w-sm rounded overflow-hidden shadow-lg p-6">
+            <h2 className="text-xl font-bold mb-2">Card Title</h2>
+            <p className="text-gray-700">
+                This is a sample card component with some content.
+            </p>
+        </div>
+    );
+}
+
+const root = ReactDOM.createRoot(document.getElementById('componentPreview'));
+root.render(<Card />);`,
+            profile: `const Profile = () => {
+    return (
+        <div className="flex items-center space-x-4 p-4 bg-white rounded-lg shadow">
+            <div className="w-16 h-16 rounded-full bg-gray-300"></div>
+            <div>
+                <h3 className="font-bold">John Doe</h3>
+                <p className="text-gray-600">Software Developer</p>
+            </div>
+        </div>
+    );
+}
+
+const root = ReactDOM.createRoot(document.getElementById('componentPreview'));
+root.render(<Profile />);`,
+            list: `const List = () => {
+    const items = ['Item 1', 'Item 2', 'Item 3', 'Item 4'];
+    return (
+        <ul className="divide-y divide-gray-200">
+            {items.map((item, index) => (
+                <li key={index} className="py-3 hover:bg-gray-50 px-4">
+                    {item}
+                </li>
+            ))}
+        </ul>
+    );
+}
+
+const root = ReactDOM.createRoot(document.getElementById('componentPreview'));
+root.render(<List />);`
+        };
+
+        function loadTemplate(templateName) {
+            const editor = document.getElementById('codeEditor');
+            editor.value = templates[templateName];
+            runCode();
+        }
+
+        function runCode() {
+            const editor = document.getElementById('codeEditor');
+            const errorDisplay = document.getElementById('errorDisplay');
+            try {
+                // Clear previous errors
+                errorDisplay.textContent = '';
+                errorDisplay.classList.add('hidden');
+                
+                // Clear previous preview
+                const previewDiv = document.getElementById('componentPreview');
+                previewDiv.innerHTML = '';
+                
+                // Transform and execute the code
+                const code = editor.value;
+                const transformedCode = Babel.transform(code, {
+                    presets: ['react']
+                }).code;
+                
+                // Execute the transformed code
+                eval(transformedCode);
+            } catch (error) {
+                console.error(error);
+                errorDisplay.textContent = `Error: ${error.message}`;
+                errorDisplay.classList.remove('hidden');
+            }
+        }
+
+        function resetCode() {
+            loadTemplate('button');
+        }
+
+        function setViewport(size) {
+            const container = document.getElementById('previewContainer');
+            container.className = 'border-2 border-dashed border-gray-200 rounded-lg p-4 min-h-[400px] transition-all duration-300';
+            
+            switch(size) {
+                case 'mobile':
+                    container.classList.add('max-w-sm');
+                    break;
+                case 'tablet':
+                    container.classList.add('max-w-2xl');
+                    break;
+                case 'desktop':
+                    container.classList.add('max-w-full');
+                    break;
+            }
+        }
+
+        // Initialize when DOM is loaded
+        document.addEventListener('DOMContentLoaded', function() {
+            loadTemplate('button');
+        });
+    </script>
+</head>
+<body class="bg-gray-100">
+    <div class="min-h-screen p-8">
+        <header class="mb-8">
+            <h1 class="text-3xl font-bold text-gray-800">Live React Component Viewer</h1>
+            <p class="text-gray-600">Edit and preview React components in real-time</p>
+        </header>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <!-- Code Editor -->
+            <div class="bg-white rounded-lg shadow-lg">
+                <div class="border-b px-6 py-4 flex items-center justify-between">
+                    <h2 class="text-lg font-semibold text-gray-800">Code Editor</h2>
+                    <div class="flex space-x-2">
+                        <button onclick="runCode()" class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
+                            Run
+                        </button>
+                        <button onclick="resetCode()" class="px-4 py-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300">
+                            Reset
+                        </button>
+                    </div>
+                </div>
+                <div class="p-6 bg-gray-900 rounded-b-lg">
+                    <textarea id="codeEditor" class="w-full h-96 bg-gray-900 text-gray-100 font-mono text-sm p-4 focus:outline-none" spellcheck="false"></textarea>
+                </div>
+            </div>
+
+            <!-- Preview Panel -->
+            <div class="bg-white rounded-lg shadow-lg p-6">
+                <div class="flex items-center justify-between mb-4">
+                    <h2 class="text-lg font-semibold text-gray-800">Preview</h2>
+                    <div class="flex space-x-2">
+                        <button onclick="setViewport('desktop')" class="px-3 py-1 text-sm bg-blue-500 text-white rounded hover:bg-blue-600">
+                            Desktop
+                        </button>
+                        <button onclick="setViewport('tablet')" class="px-3 py-1 text-sm bg-gray-200 text-gray-700 rounded hover:bg-gray-300">
+                            Tablet
+                        </button>
+                        <button onclick="setViewport('mobile')" class="px-3 py-1 text-sm bg-gray-200 text-gray-700 rounded hover:bg-gray-300">
+                            Mobile
+                        </button>
+                    </div>
+                </div>
+                <div id="previewContainer" class="border-2 border-dashed border-gray-200 rounded-lg p-4 min-h-[400px]">
+                    <div id="componentPreview"></div>
+                </div>
+                <div id="errorDisplay" class="mt-4 text-red-500 hidden"></div>
+            </div>
+        </div>
+
+        <!-- Templates Panel -->
+        <div class="mt-8 bg-white rounded-lg shadow-lg p-6">
+            <h2 class="text-lg font-semibold text-gray-800 mb-4">Quick Components</h2>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <button onclick="loadTemplate('button')" class="px-4 py-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300">
+                    Button
+                </button>
+                <button onclick="loadTemplate('card')" class="px-4 py-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300">
+                    Card
+                </button>
+                <button onclick="loadTemplate('profile')" class="px-4 py-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300">
+                    Profile
+                </button>
+                <button onclick="loadTemplate('list')" class="px-4 py-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300">
+                    List
+                </button>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
